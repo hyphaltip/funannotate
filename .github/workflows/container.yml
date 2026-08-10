@@ -31,13 +31,14 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: true
+          push: ${{ github.event.repository.fork == false }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/funannotate:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   sign:
+    if: github.event.repository.fork == false
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -56,6 +57,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/funannotate:${{ github.ref_name }}
 
   verify:
+    if: github.event.repository.fork == false
     needs: sign
     runs-on: ubuntu-latest
     permissions:
