@@ -17,17 +17,21 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
 
       - name: Check Out Repo
         uses: actions/checkout@v6
 
-      - name: Login to Docker Hub
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         id: buildx
@@ -40,17 +44,9 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: nextgenusfs/funannotate-slim:latest
+          tags: ghcr.io/${{ github.repository_owner }}/funannotate-slim:latest
           cache-from: type=gha,scope=build
           cache-to: type=gha,mode=max,scope=build
 
       - name: Image digest
         run: echo "digest=${{ steps.docker_build.outputs.digest }}" >> $GITHUB_OUTPUT
-
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v4
-        with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: nextgenusfs/funannotate
-          event-type: docker-hub-complete
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
