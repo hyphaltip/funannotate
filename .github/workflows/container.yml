@@ -31,7 +31,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: ${{ github.event.repository.fork == false }}
+          push: ${{ !github.event.repository.fork }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/funannotate:${{ github.ref_name }}
           cache-from: type=gha
